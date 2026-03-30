@@ -9,9 +9,9 @@
   "license": "MIT",
   "environment": "client",
   "entrypoints": {
-    "client": ["com.example.MCHelperMod"]
+    "client": ["com.example.MCHelperClient"]
   },
-  "mixins": ["mchelper.mixins.json"],
+  "mixins": ["mchelper.client.mixins.json"],
   "depends": {
     "fabricloader": ">=0.16.0",
     "minecraft": "~1.21",

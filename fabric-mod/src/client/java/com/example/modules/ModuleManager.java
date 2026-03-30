@@ -1,8 +1,8 @@
 package com.example.modules;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,12 +23,12 @@ public class ModuleManager {
         Module module = modules.get(name);
         if (module != null) {
             module.toggle();
-            MinecraftClient client = MinecraftClient.getInstance();
+            Minecraft client = Minecraft.getInstance();
             if (client != null && client.player != null) {
                 String status = module.isEnabled() ? "ACILDI" : "KAPANDI";
-                Formatting color = module.isEnabled() ? Formatting.GREEN : Formatting.RED;
-                client.player.sendMessage(
-                        Text.literal("[MC Helper] " + module.getName() + " " + status).formatted(color),
+                ChatFormatting color = module.isEnabled() ? ChatFormatting.GREEN : ChatFormatting.RED;
+                client.player.displayClientMessage(
+                        Component.literal("[MC Helper] " + module.getName() + " " + status).withStyle(color),
                         true
                 );
             }

@@ -1,7 +1,6 @@
 package com.example.modules;
 
 public class Module {
-
     private final String name;
     private final String description;
     private boolean enabled;
