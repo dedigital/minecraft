@@ -1,7 +1,7 @@
-package com.mchelper.mod.gui;
+package com.example.gui;
 
-import com.mchelper.mod.modules.Module;
-import com.mchelper.mod.modules.ModuleManager;
+import com.example.modules.Module;
+import com.example.modules.ModuleManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -13,9 +13,6 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.Map;
 
-/**
- * HUD Overlay - Displays module status, coordinates, and game info on screen.
- */
 public class HudOverlay {
 
     public static void render(DrawContext context, ModuleManager moduleManager) {
@@ -45,7 +42,7 @@ public class HudOverlay {
         context.drawTextWithShadow(textRenderer, "----------------", x, y, 0x444444);
         y += 12;
 
-        // Player coordinates
+        // Coordinates
         BlockPos pos = client.player.getBlockPos();
         context.drawTextWithShadow(textRenderer,
                 String.format("XYZ: %d / %d / %d", pos.getX(), pos.getY(), pos.getZ()),
@@ -58,17 +55,12 @@ public class HudOverlay {
         y += 11;
 
         // FPS
-        context.drawTextWithShadow(textRenderer,
-                "FPS: " + client.getCurrentFps(),
-                x, y, 0xAAAAAA);
-        y += 11;
+        context.drawTextWithShadow(textRenderer, "FPS: " + client.getCurrentFps(), x, y, 0xAAAAAA);
+        y += 16;
 
-        // Biome
-        y += 5;
-
-        // Entity counter (when ESP is on)
+        // Entity counter when ESP is on
         if (moduleManager.isEnabled("esp") && client.world != null) {
-            context.drawTextWithShadow(textRenderer, "----------------", x, y, 0x444444);
+            context.drawTextWithShadow(textRenderer, "--- ESP ---", x, y, 0x444444);
             y += 12;
 
             int hostile = 0, passive = 0, players = 0;
@@ -83,11 +75,10 @@ public class HudOverlay {
             context.drawTextWithShadow(textRenderer, "Pasif: " + passive, x, y, 0x44FF44);
             y += 11;
             context.drawTextWithShadow(textRenderer, "Oyuncu: " + players, x, y, 0xFFFF00);
-            y += 11;
+            y += 16;
         }
 
         // Health & Hunger
-        y += 5;
         context.drawTextWithShadow(textRenderer, "----------------", x, y, 0x444444);
         y += 12;
 
@@ -95,8 +86,7 @@ public class HudOverlay {
         int maxHealth = (int) client.player.getMaxHealth();
         int healthColor = health > 10 ? 0x00FF00 : (health > 5 ? 0xFFFF00 : 0xFF0000);
         context.drawTextWithShadow(textRenderer,
-                String.format("Can: %.0f/%d", health, maxHealth),
-                x, y, healthColor);
+                String.format("Can: %.0f/%d", health, maxHealth), x, y, healthColor);
         y += 11;
 
         int food = client.player.getHungerManager().getFoodLevel();
@@ -104,8 +94,7 @@ public class HudOverlay {
         context.drawTextWithShadow(textRenderer, "Aclik: " + food + "/20", x, y, foodColor);
         y += 11;
 
-        int armor = client.player.getArmor();
-        context.drawTextWithShadow(textRenderer, "Zirh: " + armor, x, y, 0xCCCCCC);
+        context.drawTextWithShadow(textRenderer, "Zirh: " + client.player.getArmor(), x, y, 0xCCCCCC);
         y += 15;
 
         // Keybind hints

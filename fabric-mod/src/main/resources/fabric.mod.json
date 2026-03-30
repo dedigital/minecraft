@@ -9,12 +9,12 @@
   "license": "MIT",
   "environment": "client",
   "entrypoints": {
-    "client": ["com.mchelper.mod.MCHelperMod"]
+    "client": ["com.example.MCHelperMod"]
   },
   "mixins": ["mchelper.mixins.json"],
   "depends": {
     "fabricloader": ">=0.16.0",
-    "minecraft": "~1.21.4",
+    "minecraft": "~1.21",
     "java": ">=21",
     "fabric-api": "*"
   }

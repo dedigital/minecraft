@@ -1,4 +1,4 @@
-package com.mchelper.mod.modules;
+package com.example.modules;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
@@ -16,8 +16,6 @@ public class ModuleManager {
         modules.put("esp", new Module("ESP", "Moblari ve oyunculari isaretler"));
         modules.put("fullbright", new Module("Fullbright", "Karanlikta gorme"));
         modules.put("hud", new Module("HUD", "Bilgi ekrani"));
-
-        // HUD default on
         modules.get("hud").setEnabled(true);
     }
 
@@ -25,15 +23,12 @@ public class ModuleManager {
         Module module = modules.get(name);
         if (module != null) {
             module.toggle();
-
-            // Show message in chat
             MinecraftClient client = MinecraftClient.getInstance();
             if (client != null && client.player != null) {
                 String status = module.isEnabled() ? "ACILDI" : "KAPANDI";
                 Formatting color = module.isEnabled() ? Formatting.GREEN : Formatting.RED;
                 client.player.sendMessage(
-                        Text.literal("[MC Helper] " + module.getName() + " " + status)
-                                .formatted(color),
+                        Text.literal("[MC Helper] " + module.getName() + " " + status).formatted(color),
                         true
                 );
             }
@@ -45,11 +40,5 @@ public class ModuleManager {
         return module != null && module.isEnabled();
     }
 
-    public Map<String, Module> getModules() {
-        return modules;
-    }
-
-    public void disableAll() {
-        modules.values().forEach(m -> m.setEnabled(false));
-    }
+    public Map<String, Module> getModules() { return modules; }
 }

@@ -1,7 +1,7 @@
-package com.mchelper.mod;
+package com.example;
 
-import com.mchelper.mod.modules.ModuleManager;
-import com.mchelper.mod.gui.HudOverlay;
+import com.example.modules.ModuleManager;
+import com.example.gui.HudOverlay;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -17,7 +17,6 @@ public class MCHelperMod implements ClientModInitializer {
     public static final String MOD_ID = "mchelper";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    // Keybindings
     private static KeyBinding xrayKey;
     private static KeyBinding espKey;
     private static KeyBinding fullbrightKey;
@@ -29,27 +28,21 @@ public class MCHelperMod implements ClientModInitializer {
     public void onInitializeClient() {
         LOGGER.info("[MC Helper] Mod yukleniyor...");
 
-        // Initialize module manager
         moduleManager = new ModuleManager();
 
-        // Register keybindings
         xrayKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "X-Ray Toggle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F2, "MC Helper"
         ));
-
         espKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "ESP Toggle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F3, "MC Helper"
         ));
-
         fullbrightKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "Fullbright Toggle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F4, "MC Helper"
         ));
-
         hudKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "HUD Toggle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F6, "MC Helper"
         ));
 
-        // Register tick event for keybind handling
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (xrayKey.wasPressed()) {
                 moduleManager.toggle("xray");
@@ -65,7 +58,6 @@ public class MCHelperMod implements ClientModInitializer {
             }
         });
 
-        // Register HUD renderer
         HudRenderCallback.EVENT.register((drawContext, renderTickCounter) -> {
             if (moduleManager.isEnabled("hud")) {
                 HudOverlay.render(drawContext, moduleManager);
