@@ -1,0 +1,7 @@
+# Minecraft Helper Tool Dependencies
+keyboard==0.13.5
+pyautogui==0.9.54
+pynput==1.7.6
+tkinter-tooltip==3.1.0
+Pillow==10.2.0
+psutil==5.9.8
