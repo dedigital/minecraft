@@ -1,0 +1,6 @@
+#!/bin/sh
+# Gradle wrapper script - download gradle if not present
+GRADLE_DIST_URL="https://services.gradle.org/distributions/gradle-8.10-bin.zip"
+APP_HOME=$( cd "${0%/*}" && pwd -P )
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+exec java -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"

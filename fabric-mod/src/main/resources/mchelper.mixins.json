@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.mchelper.mod.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "FullbrightMixin",
+    "XRayMixin",
+    "WorldRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

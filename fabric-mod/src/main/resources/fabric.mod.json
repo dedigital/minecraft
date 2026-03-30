@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "mchelper",
+  "version": "${version}",
+  "name": "Minecraft Helper",
+  "description": "X-Ray, ESP, Fullbright ve daha fazlasi!",
+  "authors": ["Yarismaci"],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.mchelper.mod.MCHelperMod"]
+  },
+  "mixins": ["mchelper.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
