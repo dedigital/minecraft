@@ -4,10 +4,7 @@ import com.example.gui.HudOverlay;
 import com.example.modules.ModuleManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.KeyMapping;
-import com.mojang.blaze3d.platform.InputConstants;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +14,11 @@ public class MCHelperClient implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("mchelper");
     public static ModuleManager moduleManager;
 
-    private static KeyMapping xrayKey;
-    private static KeyMapping espKey;
-    private static KeyMapping fullbrightKey;
-    private static KeyMapping hudKey;
+    // Track previous key states to detect press (not hold)
+    private boolean f2WasDown = false;
+    private boolean f3WasDown = false;
+    private boolean f4WasDown = false;
+    private boolean f6WasDown = false;
 
     @Override
     public void onInitializeClient() {
@@ -28,38 +26,46 @@ public class MCHelperClient implements ClientModInitializer {
 
         moduleManager = new ModuleManager();
 
-        xrayKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-                "X-Ray Toggle", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F2, "MC Helper"
-        ));
-        espKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-                "ESP Toggle", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F3, "MC Helper"
-        ));
-        fullbrightKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-                "Fullbright Toggle", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F4, "MC Helper"
-        ));
-        hudKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-                "HUD Toggle", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F6, "MC Helper"
-        ));
-
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (xrayKey.consumeClick()) {
+            if (client.getWindow() == null) return;
+            long window = client.getWindow().getWindow();
+
+            // F2 - X-Ray
+            boolean f2Down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_F2) == GLFW.GLFW_PRESS;
+            if (f2Down && !f2WasDown) {
                 moduleManager.toggle("xray");
+                // Force chunk rebuild for X-Ray
+                if (client.levelRenderer != null) {
+                    client.levelRenderer.allChanged();
+                }
             }
-            while (espKey.consumeClick()) {
+            f2WasDown = f2Down;
+
+            // F3 - ESP
+            boolean f3Down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_F3) == GLFW.GLFW_PRESS;
+            if (f3Down && !f3WasDown) {
                 moduleManager.toggle("esp");
             }
-            while (fullbrightKey.consumeClick()) {
+            f3WasDown = f3Down;
+
+            // F4 - Fullbright
+            boolean f4Down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_F4) == GLFW.GLFW_PRESS;
+            if (f4Down && !f4WasDown) {
                 moduleManager.toggle("fullbright");
-                // Fullbright: set gamma to max or normal
                 if (moduleManager.isEnabled("fullbright")) {
                     client.options.gamma().set(16.0);
                 } else {
                     client.options.gamma().set(1.0);
                 }
             }
-            while (hudKey.consumeClick()) {
+            f4WasDown = f4Down;
+
+            // F6 - HUD
+            boolean f6Down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_F6) == GLFW.GLFW_PRESS;
+            if (f6Down && !f6WasDown) {
                 moduleManager.toggle("hud");
             }
+            f6WasDown = f6Down;
         });
 
         HudRenderCallback.EVENT.register((guiGraphics, deltaTracker) -> {
