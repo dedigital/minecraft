@@ -21,8 +21,6 @@ public class MCHelperClient implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("mchelper");
     public static ModuleManager moduleManager;
 
-    // Key states
-    private boolean xWasDown = false;
     private boolean gWasDown = false;
     private boolean hWasDown = false;
     private boolean jWasDown = false;
@@ -32,6 +30,7 @@ public class MCHelperClient implements ClientModInitializer {
 
     private float originalFov = 70f;
     private boolean zooming = false;
+    private double lastGamma = 1.0;
 
     // Remote control
     private static final int PORT = 25567;
@@ -68,21 +67,13 @@ public class MCHelperClient implements ClientModInitializer {
 
             if (screenOpen) return;
 
-            // X - X-Ray
-            boolean xDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_X) == GLFW.GLFW_PRESS;
-            if (xDown && !xWasDown) {
-                moduleManager.toggle("xray");
-                if (client.levelRenderer != null) {
-                    client.levelRenderer.allChanged();
-                }
-            }
-            xWasDown = xDown;
+            // --- KEY TOGGLES ---
 
             // G - Fullbright
             boolean gDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_G) == GLFW.GLFW_PRESS;
             if (gDown && !gWasDown) {
                 moduleManager.toggle("fullbright");
-                applyFullbright(client);
+                sendStatus();
             }
             gWasDown = gDown;
 
@@ -91,52 +82,33 @@ public class MCHelperClient implements ClientModInitializer {
             if (hDown && !hWasDown) {
                 moduleManager.toggle("fly");
                 applyFly(client);
+                sendStatus();
             }
             hWasDown = hDown;
 
-            // J - Speed Boost
+            // J - Speed
             boolean jDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_J) == GLFW.GLFW_PRESS;
             if (jDown && !jWasDown) {
                 moduleManager.toggle("speed");
+                sendStatus();
             }
             jWasDown = jDown;
-
-            // Apply speed
-            if (moduleManager.isEnabled("speed") && client.player.onGround()) {
-                var movement = client.player.getDeltaMovement();
-                client.player.setDeltaMovement(movement.x * 1.8, movement.y, movement.z * 1.8);
-            }
 
             // K - Auto-Sprint
             boolean kDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_K) == GLFW.GLFW_PRESS;
             if (kDown && !kWasDown) {
                 moduleManager.toggle("autosprint");
+                sendStatus();
             }
             kWasDown = kDown;
 
-            if (moduleManager.isEnabled("autosprint") && client.player.input.getMoveVector().length() > 0) {
-                client.player.setSprinting(true);
-            }
-
-            // N - No Fall Damage
+            // N - No Fall
             boolean nDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_N) == GLFW.GLFW_PRESS;
             if (nDown && !nWasDown) {
                 moduleManager.toggle("nofall");
+                sendStatus();
             }
             nWasDown = nDown;
-
-            // Apply no fall - reset on BOTH client and server side
-            if (moduleManager.isEnabled("nofall")) {
-                client.player.fallDistance = 0.0f;
-                // Server-side reset for singleplayer
-                if (client.getSingleplayerServer() != null) {
-                    ServerPlayer serverPlayer = client.getSingleplayerServer()
-                            .getPlayerList().getPlayer(client.player.getUUID());
-                    if (serverPlayer != null) {
-                        serverPlayer.fallDistance = 0.0f;
-                    }
-                }
-            }
 
             // C - Zoom (hold)
             boolean cDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_C) == GLFW.GLFW_PRESS;
@@ -148,18 +120,50 @@ public class MCHelperClient implements ClientModInitializer {
                 zooming = false;
                 client.options.fov().set((int) originalFov);
             }
+
+            // --- APPLY EFFECTS EVERY TICK ---
+
+            // Fullbright - apply gamma every tick
+            double targetGamma = moduleManager.isEnabled("fullbright") ? 16.0 : 1.0;
+            if (lastGamma != targetGamma) {
+                client.options.gamma().set(targetGamma);
+                lastGamma = targetGamma;
+            }
+
+            // Speed - multiply velocity
+            if (moduleManager.isEnabled("speed") && client.player.onGround()) {
+                var movement = client.player.getDeltaMovement();
+                client.player.setDeltaMovement(movement.x * 1.8, movement.y, movement.z * 1.8);
+            }
+
+            // Auto-Sprint
+            if (moduleManager.isEnabled("autosprint") && client.player.input.getMoveVector().length() > 0) {
+                client.player.setSprinting(true);
+            }
+
+            // No Fall - reset on both client and server
+            if (moduleManager.isEnabled("nofall")) {
+                client.player.fallDistance = 0.0f;
+                if (client.getSingleplayerServer() != null) {
+                    ServerPlayer serverPlayer = client.getSingleplayerServer()
+                            .getPlayerList().getPlayer(client.player.getUUID());
+                    if (serverPlayer != null) {
+                        serverPlayer.fallDistance = 0.0f;
+                    }
+                }
+            }
+
+            // Fly - keep abilities synced
+            if (moduleManager.isEnabled("fly")) {
+                if (!client.player.getAbilities().mayfly) {
+                    client.player.getAbilities().mayfly = true;
+                    client.player.onUpdateAbilities();
+                }
+            }
         });
 
         LOGGER.info("[MC Helper] Mod basariyla yuklendi!");
         LOGGER.info("[MC Helper] Remote kontrol portu: " + PORT);
-    }
-
-    private void applyFullbright(Minecraft client) {
-        if (moduleManager.isEnabled("fullbright")) {
-            client.options.gamma().set(16.0);
-        } else {
-            client.options.gamma().set(1.0);
-        }
     }
 
     private void applyFly(Minecraft client) {
@@ -172,41 +176,32 @@ public class MCHelperClient implements ClientModInitializer {
 
     private void processRemoteCommand(String cmd, Minecraft client) {
         String[] parts = cmd.trim().split(" ");
-        if (parts.length < 1) return;
+        if (parts.length < 2) {
+            if (parts.length == 1 && parts[0].equals("status")) {
+                sendStatus();
+            }
+            return;
+        }
 
-        switch (parts[0]) {
+        String action = parts[0];
+        String module = parts[1].toLowerCase();
+
+        switch (action) {
             case "toggle":
-                if (parts.length >= 2) {
-                    String module = parts[1].toLowerCase();
-                    moduleManager.toggle(module);
-                    if (module.equals("fullbright")) applyFullbright(client);
-                    if (module.equals("fly")) applyFly(client);
-                    if (module.equals("xray") && client.levelRenderer != null) {
-                        client.levelRenderer.allChanged();
-                    }
-                    sendStatus();
-                }
-                break;
-            case "status":
+                moduleManager.toggle(module);
+                if (module.equals("fly")) applyFly(client);
+                LOGGER.info("[MC Helper] Remote toggle: " + module + " -> " + moduleManager.isEnabled(module));
                 sendStatus();
                 break;
             case "enable":
-                if (parts.length >= 2) {
-                    String module = parts[1].toLowerCase();
-                    if (!moduleManager.isEnabled(module)) moduleManager.toggle(module);
-                    if (module.equals("fullbright")) applyFullbright(client);
-                    if (module.equals("fly")) applyFly(client);
-                    sendStatus();
-                }
+                if (!moduleManager.isEnabled(module)) moduleManager.toggle(module);
+                if (module.equals("fly")) applyFly(client);
+                sendStatus();
                 break;
             case "disable":
-                if (parts.length >= 2) {
-                    String module = parts[1].toLowerCase();
-                    if (moduleManager.isEnabled(module)) moduleManager.toggle(module);
-                    if (module.equals("fullbright")) applyFullbright(client);
-                    if (module.equals("fly")) applyFly(client);
-                    sendStatus();
-                }
+                if (moduleManager.isEnabled(module)) moduleManager.toggle(module);
+                if (module.equals("fly")) applyFly(client);
+                sendStatus();
                 break;
         }
     }

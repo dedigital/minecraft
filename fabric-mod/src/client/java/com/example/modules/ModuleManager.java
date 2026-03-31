@@ -12,7 +12,6 @@ public class ModuleManager {
     private final Map<String, Module> modules = new LinkedHashMap<>();
 
     public ModuleManager() {
-        modules.put("xray", new Module("X-Ray", "Cevherleri gor", "X"));
         modules.put("fullbright", new Module("Fullbright", "Karanlikta gorme", "G"));
         modules.put("fly", new Module("Fly", "Ucma modu", "H"));
         modules.put("speed", new Module("Speed", "Hizli hareket", "J"));

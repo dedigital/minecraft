@@ -19,7 +19,6 @@ MODULES = [
     {"id": "speed",      "name": "Speed",      "icon": "BOLT", "desc": "Hizli hareket (1.8x)", "key": "J"},
     {"id": "autosprint", "name": "Sprint",     "icon": "RUN", "desc": "Otomatik kosma", "key": "K"},
     {"id": "nofall",     "name": "No Fall",    "icon": "SHLD", "desc": "Dusme hasari yok", "key": "N"},
-    {"id": "xray",       "name": "X-Ray",      "icon": "EYE", "desc": "Cevherleri gor", "key": "X"},
 ]
 
 # Colors
