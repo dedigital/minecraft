@@ -12,8 +12,11 @@ public class ModuleManager {
     private final Map<String, Module> modules = new LinkedHashMap<>();
 
     public ModuleManager() {
-        modules.put("xray", new Module("X-Ray", "Cevherleri bloklarin arkasinda goster"));
-        modules.put("fullbright", new Module("Fullbright", "Karanlikta gorme"));
+        modules.put("fullbright", new Module("Fullbright", "Karanlikta gorme", "G"));
+        modules.put("fly", new Module("Fly", "Ucma modu", "H"));
+        modules.put("speed", new Module("Speed", "Hizli hareket", "J"));
+        modules.put("autosprint", new Module("Auto-Sprint", "Otomatik kosma", "K"));
+        modules.put("nofall", new Module("No Fall", "Dusmeden hasar almama", "N"));
     }
 
     public void toggle(String name) {
