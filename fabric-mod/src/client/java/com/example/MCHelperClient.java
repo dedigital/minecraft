@@ -27,8 +27,8 @@ public class MCHelperClient implements ClientModInitializer {
         moduleManager = new ModuleManager();
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.getWindow() == null) return;
-            long window = client.getWindow().getHandle();
+            long window = GLFW.glfwGetCurrentContext();
+            if (window == 0L) return;
 
             // F2 - X-Ray
             boolean f2Down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_F2) == GLFW.GLFW_PRESS;
