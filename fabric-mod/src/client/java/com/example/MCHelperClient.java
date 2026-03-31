@@ -12,8 +12,8 @@ public class MCHelperClient implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("mchelper");
     public static ModuleManager moduleManager;
 
-    private boolean f2WasDown = false;
-    private boolean f4WasDown = false;
+    private boolean rWasDown = false;
+    private boolean gWasDown = false;
 
     @Override
     public void onInitializeClient() {
@@ -22,30 +22,35 @@ public class MCHelperClient implements ClientModInitializer {
         moduleManager = new ModuleManager();
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            // Don't process keys if a screen/chat is open
+            if (client.screen != null) return;
+
             long window = GLFW.glfwGetCurrentContext();
             if (window == 0L) return;
 
-            // F2 - X-Ray
-            boolean f2Down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_F2) == GLFW.GLFW_PRESS;
-            if (f2Down && !f2WasDown) {
+            // R - X-Ray
+            boolean rDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_R) == GLFW.GLFW_PRESS;
+            if (rDown && !rWasDown) {
                 moduleManager.toggle("xray");
+                LOGGER.info("[MC Helper] X-Ray {}", moduleManager.isEnabled("xray") ? "ACILDI" : "KAPANDI");
                 if (client.levelRenderer != null) {
                     client.levelRenderer.allChanged();
                 }
             }
-            f2WasDown = f2Down;
+            rWasDown = rDown;
 
-            // F4 - Fullbright
-            boolean f4Down = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_F4) == GLFW.GLFW_PRESS;
-            if (f4Down && !f4WasDown) {
+            // G - Fullbright
+            boolean gDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_G) == GLFW.GLFW_PRESS;
+            if (gDown && !gWasDown) {
                 moduleManager.toggle("fullbright");
+                LOGGER.info("[MC Helper] Fullbright {}", moduleManager.isEnabled("fullbright") ? "ACILDI" : "KAPANDI");
                 if (moduleManager.isEnabled("fullbright")) {
                     client.options.gamma().set(16.0);
                 } else {
                     client.options.gamma().set(1.0);
                 }
             }
-            f4WasDown = f4Down;
+            gWasDown = gDown;
         });
 
         LOGGER.info("[MC Helper] Mod basariyla yuklendi!");
