@@ -11,19 +11,35 @@ public class ModuleManager {
     private static final Logger LOGGER = LoggerFactory.getLogger("mchelper");
     private final Map<String, Module> modules = new LinkedHashMap<>();
 
+    // Configurable values
+    private double speedMult = 1.8;
+    private int zoomFov = 20;
+    private double auraRange = 4.0;
+
     public ModuleManager() {
-        modules.put("fullbright", new Module("Fullbright", "Karanlikta gorme", "G"));
-        modules.put("fly", new Module("Fly", "Ucma modu", "H"));
-        modules.put("speed", new Module("Speed", "Hizli hareket", "J"));
-        modules.put("autosprint", new Module("Auto-Sprint", "Otomatik kosma", "K"));
-        modules.put("nofall", new Module("No Fall", "Dusmeden hasar almama", "N"));
+        // Combat
+        modules.put("killaura", new Module("Kill Aura", "Attack nearest hostile mob", "R", "combat"));
+        modules.put("antiknockback", new Module("Anti-Knockback", "Reduce knockback by 90%", "B", "combat"));
+
+        // Movement
+        modules.put("fly", new Module("Fly", "Creative flight", "H", "movement"));
+        modules.put("speed", new Module("Speed", "Faster ground movement", "J", "movement"));
+        modules.put("autosprint", new Module("Auto-Sprint", "Automatic sprinting", "K", "movement"));
+        modules.put("nofall", new Module("No Fall", "No fall damage", "N", "movement"));
+        modules.put("step", new Module("Step Assist", "Step up 1.5 blocks", "V", "movement"));
+
+        // Visual
+        modules.put("fullbright", new Module("Fullbright", "See in the dark", "G", "visual"));
+
+        // Player
+        modules.put("nohunger", new Module("No Hunger", "Keep hunger full (SP only)", "P", "player"));
     }
 
     public void toggle(String name) {
         Module module = modules.get(name);
         if (module != null) {
             module.toggle();
-            String status = module.isEnabled() ? "ACILDI" : "KAPANDI";
+            String status = module.isEnabled() ? "ON" : "OFF";
             LOGGER.info("[MC Helper] {} {}", module.getName(), status);
         }
     }
@@ -34,4 +50,14 @@ public class ModuleManager {
     }
 
     public Map<String, Module> getModules() { return modules; }
+
+    // Config getters/setters
+    public double getSpeedMult() { return speedMult; }
+    public void setSpeedMult(double speedMult) { this.speedMult = speedMult; }
+
+    public int getZoomFov() { return zoomFov; }
+    public void setZoomFov(int zoomFov) { this.zoomFov = zoomFov; }
+
+    public double getAuraRange() { return auraRange; }
+    public void setAuraRange(double auraRange) { this.auraRange = auraRange; }
 }
