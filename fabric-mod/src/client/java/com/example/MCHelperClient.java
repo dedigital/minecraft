@@ -18,6 +18,7 @@ public class MCHelperClient implements ClientModInitializer {
     public static ModuleManager moduleManager;
 
     // Key states
+    private boolean xWasDown = false;   // X-Ray
     private boolean gWasDown = false;   // Fullbright
     private boolean hWasDown = false;   // Fly
     private boolean jWasDown = false;   // Speed
@@ -52,6 +53,17 @@ public class MCHelperClient implements ClientModInitializer {
 
             // Don't process other keys if screen is open
             if (screenOpen) return;
+
+            // X - X-Ray
+            boolean xDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_X) == GLFW.GLFW_PRESS;
+            if (xDown && !xWasDown) {
+                moduleManager.toggle("xray");
+                // Force chunk rebuild to apply X-Ray
+                if (client.levelRenderer != null) {
+                    client.levelRenderer.allChanged();
+                }
+            }
+            xWasDown = xDown;
 
             // G - Fullbright
             boolean gDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_G) == GLFW.GLFW_PRESS;
@@ -162,6 +174,6 @@ public class MCHelperClient implements ClientModInitializer {
         });
 
         LOGGER.info("[MC Helper] Mod basariyla yuklendi!");
-        LOGGER.info("[MC Helper] Tuslar: G=Fullbright H=Fly J=Speed K=Sprint N=NoFall C=Zoom M=Menu");
+        LOGGER.info("[MC Helper] Tuslar: X=XRay G=Fullbright H=Fly J=Speed K=Sprint N=NoFall C=Zoom M=Menu");
     }
 }

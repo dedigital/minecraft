@@ -40,6 +40,11 @@ public class MCHelperScreen extends Screen {
                     button -> {
                         moduleManager.toggle(id);
 
+                        // Handle xray - force chunk rebuild
+                        if (id.equals("xray") && minecraft != null && minecraft.levelRenderer != null) {
+                            minecraft.levelRenderer.allChanged();
+                        }
+
                         // Handle fullbright gamma
                         if (id.equals("fullbright") && minecraft != null) {
                             if (moduleManager.isEnabled("fullbright")) {

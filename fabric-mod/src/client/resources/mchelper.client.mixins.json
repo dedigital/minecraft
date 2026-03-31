@@ -2,7 +2,9 @@
   "required": true,
   "package": "com.example.mixin.client",
   "compatibilityLevel": "JAVA_21",
-  "client": [],
+  "client": [
+    "XRayMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }
