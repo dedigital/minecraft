@@ -12,7 +12,6 @@ public class MCHelperClient implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("mchelper");
     public static ModuleManager moduleManager;
 
-    private boolean rWasDown = false;
     private boolean gWasDown = false;
 
     @Override
@@ -22,22 +21,10 @@ public class MCHelperClient implements ClientModInitializer {
         moduleManager = new ModuleManager();
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            // Don't process keys if a screen/chat is open
             if (client.screen != null) return;
 
             long window = GLFW.glfwGetCurrentContext();
             if (window == 0L) return;
-
-            // R - X-Ray
-            boolean rDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_R) == GLFW.GLFW_PRESS;
-            if (rDown && !rWasDown) {
-                moduleManager.toggle("xray");
-                LOGGER.info("[MC Helper] X-Ray {}", moduleManager.isEnabled("xray") ? "ACILDI" : "KAPANDI");
-                if (client.levelRenderer != null) {
-                    client.levelRenderer.allChanged();
-                }
-            }
-            rWasDown = rDown;
 
             // G - Fullbright
             boolean gDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_G) == GLFW.GLFW_PRESS;
