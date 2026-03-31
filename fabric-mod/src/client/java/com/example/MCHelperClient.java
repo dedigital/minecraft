@@ -92,13 +92,10 @@ public class MCHelperClient implements ClientModInitializer {
             }
             jWasDown = jDown;
 
-            // Apply speed
-            if (moduleManager.isEnabled("speed")) {
-                client.player.getAbilities().setWalkingSpeed(0.2f); // 2x normal
-                client.player.getAbilities().setFlyingSpeed(0.1f);  // 5x normal
-            } else {
-                client.player.getAbilities().setWalkingSpeed(0.1f); // normal
-                client.player.getAbilities().setFlyingSpeed(0.02f); // normal
+            // Apply speed - multiply actual movement velocity
+            if (moduleManager.isEnabled("speed") && client.player.onGround()) {
+                var movement = client.player.getDeltaMovement();
+                client.player.setDeltaMovement(movement.x * 1.8, movement.y, movement.z * 1.8);
             }
 
             // K - Auto-Sprint
@@ -120,9 +117,12 @@ public class MCHelperClient implements ClientModInitializer {
             }
             nWasDown = nDown;
 
-            // Apply no fall
+            // Apply no fall - reset fall distance and set onGround when about to land
             if (moduleManager.isEnabled("nofall")) {
-                client.player.resetFallDistance();
+                client.player.fallDistance = 0.0f;
+                if (client.player.getDeltaMovement().y < -0.5) {
+                    client.player.setOnGround(true);
+                }
             }
 
             // C - Zoom (hold)
