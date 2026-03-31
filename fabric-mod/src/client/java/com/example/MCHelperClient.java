@@ -350,7 +350,6 @@ public class MCHelperClient implements ClientModInitializer {
                     .getPlayerList().getPlayer(client.player.getUUID());
             if (serverPlayer != null) {
                 serverPlayer.getFoodData().setFoodLevel(20);
-                serverPlayer.getFoodData().setSaturationLevel(20.0f);
             }
         }
     }
