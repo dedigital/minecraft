@@ -2,7 +2,6 @@ package com.example;
 
 import com.example.modules.Module;
 import com.example.modules.ModuleManager;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -14,7 +13,7 @@ public class MCHelperScreen extends Screen {
     private final ModuleManager moduleManager;
 
     public MCHelperScreen(ModuleManager moduleManager) {
-        super(Component.literal("MC Helper"));
+        super(Component.literal("MC Helper - Hile Menusu"));
         this.moduleManager = moduleManager;
     }
 
@@ -81,18 +80,6 @@ public class MCHelperScreen extends Screen {
                 Component.literal("Kapat [ESC]"),
                 button -> this.onClose()
         ).bounds(centerX - buttonWidth / 2, this.height - 40, buttonWidth, buttonHeight).build());
-    }
-
-    @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // Dark background
-        graphics.fill(0, 0, this.width, this.height, 0x88000000);
-
-        // Title
-        graphics.drawCenteredString(this.font, "MC Helper - Hile Menusu", this.width / 2, 20, 0x55FF55);
-
-        // Render buttons
-        super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     @Override

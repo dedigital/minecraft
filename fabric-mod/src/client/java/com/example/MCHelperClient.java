@@ -1,16 +1,12 @@
 package com.example;
 
-import com.example.modules.Module;
 import com.example.modules.ModuleManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 public class MCHelperClient implements ClientModInitializer {
 
@@ -138,38 +134,6 @@ public class MCHelperClient implements ClientModInitializer {
             } else if (!cDown && zooming) {
                 zooming = false;
                 client.options.fov().set((int) originalFov);
-            }
-        });
-
-        // HUD Overlay - show active modules on screen
-        HudRenderCallback.EVENT.register((graphics, delta) -> {
-            Minecraft client = Minecraft.getInstance();
-            if (client.player == null) return;
-            if (client.screen != null) return; // Don't show when GUI is open
-
-            int y = 5;
-            // Title
-            graphics.drawString(client.font, "[MC Helper]", 5, y, 0x55FF55);
-            y += 12;
-
-            boolean anyActive = false;
-            for (Map.Entry<String, Module> entry : moduleManager.getModules().entrySet()) {
-                Module module = entry.getValue();
-                if (module.isEnabled()) {
-                    graphics.drawString(client.font, module.getName() + " [" + module.getKey() + "]", 5, y, 0xFFFFFF);
-                    y += 10;
-                    anyActive = true;
-                }
-            }
-
-            if (zooming) {
-                graphics.drawString(client.font, "Zoom [C]", 5, y, 0xFFFFFF);
-                y += 10;
-                anyActive = true;
-            }
-
-            if (!anyActive) {
-                graphics.drawString(client.font, "M = Menu", 5, y, 0x888888);
             }
         });
 
