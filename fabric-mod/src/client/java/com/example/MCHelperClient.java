@@ -4,11 +4,20 @@ import com.example.modules.ModuleManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.effect.MobEffects;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +47,12 @@ public class MCHelperClient implements ClientModInitializer {
     private boolean bWasDown = false;
     private boolean vWasDown = false;
     private boolean pWasDown = false;
+    private boolean fWasDown = false;
+    private boolean uWasDown = false;
+    private boolean oWasDown = false;
+    private boolean yWasDown = false;
+    private boolean tWasDown = false;
+    private boolean iWasDown = false;
 
     // Zoom state
     private float originalFov = 70f;
@@ -60,7 +75,7 @@ public class MCHelperClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        LOGGER.info("[MC Helper] Loading MC Helper v2.0...");
+        LOGGER.info("[MC Helper] Loading MC Helper v2.1...");
 
         moduleManager = new ModuleManager();
         startRemoteServer();
@@ -101,16 +116,21 @@ public class MCHelperClient implements ClientModInitializer {
             applyAntiKnockback(client);
             applyStepAssist(client);
             applyNoHunger(client);
+            applyAntiBlind(client);
+            applyNoWeather(client);
+            applyAutoTool(client);
+            applyFastBreak(client);
 
-            // Send INFO to remote every 10 ticks
+            // Send INFO + radar data to remote every 10 ticks
             tickCounter++;
             if (tickCounter >= 10) {
                 tickCounter = 0;
                 sendInfo(client);
+                sendRadarData(client);
             }
         });
 
-        LOGGER.info("[MC Helper] MC Helper v2.0 loaded!");
+        LOGGER.info("[MC Helper] MC Helper v2.1 loaded!");
         LOGGER.info("[MC Helper] Remote control port: " + PORT);
     }
 
@@ -192,6 +212,40 @@ public class MCHelperClient implements ClientModInitializer {
             sendStatus();
         }
         pWasDown = pDown;
+
+        // F - Criticals
+        boolean fDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_F) == GLFW.GLFW_PRESS;
+        if (fDown && !fWasDown) { moduleManager.toggle("criticals"); sendStatus(); }
+        fWasDown = fDown;
+
+        // U - Radar
+        boolean uDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_U) == GLFW.GLFW_PRESS;
+        if (uDown && !uWasDown) { moduleManager.toggle("radar"); sendStatus(); }
+        uWasDown = uDown;
+
+        // O - Anti-Blind
+        boolean oDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_O) == GLFW.GLFW_PRESS;
+        if (oDown && !oWasDown) { moduleManager.toggle("antiblind"); sendStatus(); }
+        oWasDown = oDown;
+
+        // Y - No Weather
+        boolean yDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_Y) == GLFW.GLFW_PRESS;
+        if (yDown && !yWasDown) { moduleManager.toggle("noweather"); sendStatus(); }
+        yWasDown = yDown;
+
+        // T - Auto-Tool
+        boolean tDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_T) == GLFW.GLFW_PRESS;
+        if (tDown && !tWasDown) { moduleManager.toggle("autotool"); sendStatus(); }
+        tWasDown = tDown;
+
+        // I - Fast Break
+        boolean iDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_I) == GLFW.GLFW_PRESS;
+        if (iDown && !iWasDown) {
+            moduleManager.toggle("fastbreak");
+            if (!moduleManager.isEnabled("fastbreak")) resetFastBreak(client);
+            sendStatus();
+        }
+        iWasDown = iDown;
 
         // C - Zoom (hold, not toggle)
         boolean cDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_C) == GLFW.GLFW_PRESS;
@@ -289,6 +343,10 @@ public class MCHelperClient implements ClientModInitializer {
 
             // Double check range (bounding box inflate can be slightly larger)
             if (client.player.distanceTo(target) <= range) {
+                // Criticals: jump before attacking for critical hit damage
+                if (moduleManager.isEnabled("criticals") && client.player.onGround()) {
+                    client.player.jumpFromGround();
+                }
                 client.gameMode.attack(client.player, target);
                 client.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
             }
@@ -352,6 +410,136 @@ public class MCHelperClient implements ClientModInitializer {
                 serverPlayer.getFoodData().setFoodLevel(20);
             }
         }
+    }
+
+    private void applyAntiBlind(Minecraft client) {
+        if (!moduleManager.isEnabled("antiblind")) return;
+        try {
+            if (client.player.hasEffect(MobEffects.BLINDNESS)) {
+                client.player.removeEffect(MobEffects.BLINDNESS);
+            }
+            if (client.player.hasEffect(MobEffects.DARKNESS)) {
+                client.player.removeEffect(MobEffects.DARKNESS);
+            }
+        } catch (Throwable t) {}
+    }
+
+    private void applyNoWeather(Minecraft client) {
+        if (!moduleManager.isEnabled("noweather")) return;
+        try {
+            client.level.setRainLevel(0.0f);
+            client.level.setThunderLevel(0.0f);
+        } catch (Throwable t) {}
+    }
+
+    private void applyAutoTool(Minecraft client) {
+        if (!moduleManager.isEnabled("autotool")) return;
+        if (client.hitResult == null || client.hitResult.getType() != HitResult.Type.BLOCK) return;
+        if (!client.options.keyAttack.isDown()) return;
+
+        BlockHitResult blockHit = (BlockHitResult) client.hitResult;
+        var targetState = client.level.getBlockState(blockHit.getBlockPos());
+
+        int bestSlot = -1;
+        float bestSpeed = 1.0f;
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = client.player.getInventory().getItem(i);
+            if (!stack.isEmpty()) {
+                float speed = stack.getDestroySpeed(targetState);
+                if (speed > bestSpeed) {
+                    bestSpeed = speed;
+                    bestSlot = i;
+                }
+            }
+        }
+        if (bestSlot >= 0 && bestSlot != client.player.getInventory().selected) {
+            client.player.getInventory().selected = bestSlot;
+        }
+    }
+
+    private void applyFastBreak(Minecraft client) {
+        if (!moduleManager.isEnabled("fastbreak")) return;
+        try {
+            var attr = client.player.getAttribute(
+                    net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_BREAK_SPEED);
+            if (attr != null && attr.getBaseValue() < 2.0) {
+                attr.setBaseValue(2.0);
+            }
+        } catch (Throwable t) {}
+    }
+
+    private void resetFastBreak(Minecraft client) {
+        try {
+            var attr = client.player.getAttribute(
+                    net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_BREAK_SPEED);
+            if (attr != null) attr.setBaseValue(1.0);
+        } catch (Throwable t) {}
+    }
+
+    // ========== RADAR DATA ==========
+
+    private void sendRadarData(Minecraft client) {
+        if (!moduleManager.isEnabled("radar") || remoteOut == null) return;
+
+        double px = client.player.getX();
+        double py = client.player.getY();
+        double pz = client.player.getZ();
+
+        remoteOut.println("ROTATION yaw=" + String.format("%.1f", client.player.getYRot()));
+
+        StringBuilder entities = new StringBuilder("ENTITIES ");
+        for (var entity : client.level.getEntitiesOfClass(
+                LivingEntity.class,
+                client.player.getBoundingBox().inflate(32),
+                e -> e != client.player && e.isAlive())) {
+            String type;
+            if (entity instanceof Monster) type = "hostile";
+            else if (entity instanceof Animal) type = "passive";
+            else if (entity instanceof Player) type = "player";
+            else type = "other";
+            entities.append(String.format("%s,%.1f,%.1f,%.1f;", type,
+                    entity.getX() - px, entity.getY() - py, entity.getZ() - pz));
+        }
+        remoteOut.println(entities.toString().trim());
+
+        // Ore scan every 20 ticks (1 second)
+        if (tickCounter == 0) {
+            StringBuilder ores = new StringBuilder("ORES ");
+            BlockPos playerPos = client.player.blockPosition();
+            int radius = 12;
+            int count = 0;
+            for (int x = -radius; x <= radius && count < 200; x++) {
+                for (int y = -radius; y <= radius && count < 200; y++) {
+                    for (int z = -radius; z <= radius && count < 200; z++) {
+                        Block block = client.level.getBlockState(playerPos.offset(x, y, z)).getBlock();
+                        String oreType = getOreType(block);
+                        if (oreType != null) {
+                            ores.append(String.format("%s,%d,%d,%d;", oreType, x, y, z));
+                            count++;
+                        }
+                    }
+                }
+            }
+            remoteOut.println(ores.toString().trim());
+        }
+        remoteOut.flush();
+    }
+
+    private static String getOreType(Block block) {
+        if (block == Blocks.DIAMOND_ORE || block == Blocks.DEEPSLATE_DIAMOND_ORE) return "diamond";
+        if (block == Blocks.IRON_ORE || block == Blocks.DEEPSLATE_IRON_ORE) return "iron";
+        if (block == Blocks.GOLD_ORE || block == Blocks.DEEPSLATE_GOLD_ORE) return "gold";
+        if (block == Blocks.EMERALD_ORE || block == Blocks.DEEPSLATE_EMERALD_ORE) return "emerald";
+        if (block == Blocks.LAPIS_ORE || block == Blocks.DEEPSLATE_LAPIS_ORE) return "lapis";
+        if (block == Blocks.REDSTONE_ORE || block == Blocks.DEEPSLATE_REDSTONE_ORE) return "redstone";
+        if (block == Blocks.COPPER_ORE || block == Blocks.DEEPSLATE_COPPER_ORE) return "copper";
+        if (block == Blocks.COAL_ORE || block == Blocks.DEEPSLATE_COAL_ORE) return "coal";
+        if (block == Blocks.ANCIENT_DEBRIS) return "ancient";
+        if (block == Blocks.NETHER_GOLD_ORE) return "gold";
+        if (block == Blocks.NETHER_QUARTZ_ORE) return "quartz";
+        if (block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST || block == Blocks.ENDER_CHEST) return "chest";
+        if (block == Blocks.SPAWNER) return "spawner";
+        return null;
     }
 
     // ========== REMOTE CONTROL ==========
@@ -482,7 +670,7 @@ public class MCHelperClient implements ClientModInitializer {
                         remoteOut = new PrintWriter(socket.getOutputStream(), true);
                         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                        remoteOut.println("CONNECTED MC Helper v2.0");
+                        remoteOut.println("CONNECTED MC Helper v2.1");
                         sendStatus();
                         sendConfig();
 

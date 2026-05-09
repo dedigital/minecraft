@@ -20,6 +20,7 @@ public class ModuleManager {
         // Combat
         modules.put("killaura", new Module("Kill Aura", "Attack nearest hostile mob", "R", "combat"));
         modules.put("antiknockback", new Module("Anti-Knockback", "Reduce knockback by 90%", "B", "combat"));
+        modules.put("criticals", new Module("Criticals", "Critical hits with Kill Aura", "F", "combat"));
 
         // Movement
         modules.put("fly", new Module("Fly", "Creative flight", "H", "movement"));
@@ -30,9 +31,14 @@ public class ModuleManager {
 
         // Visual
         modules.put("fullbright", new Module("Fullbright", "See in the dark", "G", "visual"));
+        modules.put("radar", new Module("Radar", "Show entities/ores in GUI", "U", "visual"));
+        modules.put("antiblind", new Module("Anti-Blind", "Remove blindness effect", "O", "visual"));
+        modules.put("noweather", new Module("No Weather", "Clear rain/thunder", "Y", "visual"));
 
         // Player
         modules.put("nohunger", new Module("No Hunger", "Keep hunger full (SP only)", "P", "player"));
+        modules.put("autotool", new Module("Auto-Tool", "Auto-select best tool", "T", "player"));
+        modules.put("fastbreak", new Module("Fast Break", "2x mining speed", "I", "player"));
     }
 
     public void toggle(String name) {
