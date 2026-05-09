@@ -452,8 +452,12 @@ public class MCHelperClient implements ClientModInitializer {
                 }
             }
         }
-        if (bestSlot >= 0 && bestSlot != client.player.getInventory().selected) {
-            client.player.getInventory().selected = bestSlot;
+        if (bestSlot >= 0) {
+            try {
+                client.player.getInventory().setSelectedSlot(bestSlot);
+            } catch (Throwable t) {
+                // Method might not exist on this version
+            }
         }
     }
 
