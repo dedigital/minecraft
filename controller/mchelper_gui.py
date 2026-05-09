@@ -22,29 +22,27 @@ VERSION = "2.1"
 # ---------------------------------------------------------------------------
 MODULES = [
     # Combat
-    {"id": "killaura",   "name": "Kill Aura",   "cat": "combat",   "key": "R",  "desc": "Otomatik saldiri"},
-    {"id": "reach",      "name": "Reach",       "cat": "combat",   "key": "G",  "desc": "Uzun menzilli saldiri"},
-    {"id": "criticals",  "name": "Criticals",   "cat": "combat",   "key": "F",  "desc": "Her vuruста kritik hasar"},
+    {"id": "killaura",      "name": "Kill Aura",       "cat": "combat",   "key": "R", "desc": "Yakindaki dusmanlari otomatik vur"},
+    {"id": "antiknockback", "name": "Anti-Knockback",  "cat": "combat",   "key": "B", "desc": "Geri itilmeyi azalt"},
+    {"id": "criticals",     "name": "Criticals",       "cat": "combat",   "key": "F", "desc": "Kill Aura ile kritik vurus"},
 
     # Movement
-    {"id": "fly",        "name": "Fly",         "cat": "movement",  "key": "V",  "desc": "Ucus modu"},
-    {"id": "speed",      "name": "Speed",       "cat": "movement",  "key": "C",  "desc": "Hizli hareket"},
-    {"id": "nofall",     "name": "No Fall",     "cat": "movement",  "key": "N",  "desc": "Dusmeden hasar alma"},
-    {"id": "step",       "name": "Step",        "cat": "movement",  "key": "B",  "desc": "Bloklari otomatik cik"},
+    {"id": "fly",        "name": "Fly",          "cat": "movement",  "key": "H", "desc": "Ucma modu"},
+    {"id": "speed",      "name": "Speed",        "cat": "movement",  "key": "J", "desc": "Hizli hareket (1.8x)"},
+    {"id": "autosprint", "name": "Auto-Sprint",  "cat": "movement",  "key": "K", "desc": "Otomatik kosma"},
+    {"id": "nofall",     "name": "No Fall",      "cat": "movement",  "key": "N", "desc": "Dusme hasari yok"},
+    {"id": "step",       "name": "Step Assist",  "cat": "movement",  "key": "V", "desc": "1.5 blok yuksekligine cik"},
 
     # Visual
-    {"id": "esp",        "name": "ESP",         "cat": "visual",    "key": "X",  "desc": "Varliklari duvardan gor"},
-    {"id": "fullbright", "name": "Full Bright", "cat": "visual",    "key": "H",  "desc": "Tam aydinlik"},
-    {"id": "xray",       "name": "X-Ray",       "cat": "visual",    "key": "Z",  "desc": "Cevher goruntusu"},
-    {"id": "radar",      "name": "Radar",       "cat": "visual",    "key": "U",  "desc": "Yakinlardaki varliklari/cevherleri goster"},
-    {"id": "antiblind",  "name": "Anti-Blind",  "cat": "visual",    "key": "O",  "desc": "Korluk efektini kaldir"},
-    {"id": "noweather",  "name": "No Weather",  "cat": "visual",    "key": "Y",  "desc": "Yagmuru kaldir"},
+    {"id": "fullbright", "name": "Fullbright",  "cat": "visual",    "key": "G", "desc": "Karanlikta gorme"},
+    {"id": "radar",      "name": "Radar",       "cat": "visual",    "key": "U", "desc": "Yakindaki varliklari/cevherleri goster"},
+    {"id": "antiblind",  "name": "Anti-Blind",  "cat": "visual",    "key": "O", "desc": "Korluk efektini kaldir"},
+    {"id": "noweather",  "name": "No Weather",  "cat": "visual",    "key": "Y", "desc": "Yagmuru/firtinayi kaldir"},
 
     # Player
-    {"id": "autofish",   "name": "Auto Fish",   "cat": "player",    "key": "J",  "desc": "Otomatik balik tutma"},
-    {"id": "scaffold",   "name": "Scaffold",    "cat": "player",    "key": "L",  "desc": "Altina otomatik blok koy"},
-    {"id": "autotool",   "name": "Auto-Tool",   "cat": "player",    "key": "T",  "desc": "En iyi aleti otomatik sec"},
-    {"id": "fastbreak",  "name": "Fast Break",  "cat": "player",    "key": "I",  "desc": "Hizli kazma"},
+    {"id": "nohunger",  "name": "No Hunger",   "cat": "player",   "key": "P", "desc": "Aclik dolsun (singleplayer)"},
+    {"id": "autotool",  "name": "Auto-Tool",   "cat": "player",   "key": "T", "desc": "En iyi aleti otomatik sec"},
+    {"id": "fastbreak", "name": "Fast Break",  "cat": "player",   "key": "I", "desc": "2x hizli kazma"},
 ]
 
 # Categories (tabs)

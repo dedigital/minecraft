@@ -308,14 +308,22 @@ public class MCHelperClient implements ClientModInitializer {
     }
 
     private void applyNoFall(Minecraft client) {
-        if (moduleManager.isEnabled("nofall")) {
-            client.player.fallDistance = 0.0f;
-            if (client.getSingleplayerServer() != null) {
-                ServerPlayer serverPlayer = client.getSingleplayerServer()
-                        .getPlayerList().getPlayer(client.player.getUUID());
-                if (serverPlayer != null) {
-                    serverPlayer.fallDistance = 0.0f;
-                }
+        if (!moduleManager.isEnabled("nofall")) return;
+
+        // Reset client-side fall distance every tick
+        client.player.fallDistance = 0.0f;
+
+        // Trick the server into thinking we're on ground when falling fast
+        if (client.player.getDeltaMovement().y < -0.08) {
+            client.player.setOnGround(true);
+        }
+
+        // Reset server-side fall distance for singleplayer
+        if (client.getSingleplayerServer() != null) {
+            ServerPlayer serverPlayer = client.getSingleplayerServer()
+                    .getPlayerList().getPlayer(client.player.getUUID());
+            if (serverPlayer != null) {
+                serverPlayer.fallDistance = 0.0f;
             }
         }
     }
