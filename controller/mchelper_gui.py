@@ -124,7 +124,7 @@ class MCHelperGUI:
     """Main GUI controller for MC Helper fabric mod."""
 
     HOST = "127.0.0.1"
-    PORT = 25566
+    PORT = 25567
     RECONNECT_INTERVAL = 5  # seconds
 
     def __init__(self):
