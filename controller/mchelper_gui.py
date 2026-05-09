@@ -40,7 +40,8 @@ MODULES = [
     {"id": "noweather",  "name": "No Weather",  "cat": "visual",    "key": "Y", "desc": "Yagmuru/firtinayi kaldir"},
 
     # Player
-    {"id": "nohunger",  "name": "No Hunger",   "cat": "player",   "key": "P", "desc": "Aclik dolsun (singleplayer)"},
+    {"id": "autoeat",   "name": "Auto-Eat",    "cat": "player",   "key": "L", "desc": "Aclik dustugunde otomatik ye (MP icin)"},
+    {"id": "nohunger",  "name": "No Hunger",   "cat": "player",   "key": "P", "desc": "Aclik dolsun (sadece singleplayer)"},
     {"id": "autotool",  "name": "Auto-Tool",   "cat": "player",   "key": "T", "desc": "En iyi aleti otomatik sec"},
     {"id": "fastbreak", "name": "Fast Break",  "cat": "player",   "key": "I", "desc": "2x hizli kazma"},
 ]

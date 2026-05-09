@@ -120,6 +120,7 @@ public class MCHelperClient implements ClientModInitializer {
             applyNoWeather(client);
             applyAutoTool(client);
             applyFastBreak(client);
+            applyAutoEat(client);
 
             // Send INFO + radar data to remote every 10 ticks
             tickCounter++;
@@ -338,10 +339,20 @@ public class MCHelperClient implements ClientModInitializer {
         double range = moduleManager.getAuraRange();
         AABB searchBox = client.player.getBoundingBox().inflate(range);
 
+        String targets = moduleManager.getAuraTargets();
         List<LivingEntity> entities = client.level.getEntitiesOfClass(
                 LivingEntity.class,
                 searchBox,
-                e -> e instanceof Monster && e.isAlive() && e != client.player
+                e -> {
+                    if (e == client.player) return false;
+                    if (!e.isAlive()) return false;
+                    switch (targets) {
+                        case "mobs":    return e instanceof Monster;
+                        case "players": return e instanceof Player;
+                        case "all":
+                        default:        return true;
+                    }
+                }
         );
 
         if (!entities.isEmpty()) {
@@ -488,6 +499,87 @@ public class MCHelperClient implements ClientModInitializer {
         } catch (Throwable t) {}
     }
 
+    // ========== AUTO-EAT ==========
+
+    private int autoEatPreviousSlot = -1;
+    private boolean autoEatActive = false;
+
+    private void applyAutoEat(Minecraft client) {
+        if (!moduleManager.isEnabled("autoeat")) {
+            stopAutoEat(client);
+            return;
+        }
+        if (client.player == null || client.options == null) return;
+
+        int food = client.player.getFoodData().getFoodLevel();
+
+        if (food < 18) {
+            // Find food in hotbar
+            int foodSlot = -1;
+            for (int i = 0; i < 9; i++) {
+                ItemStack stack = client.player.getInventory().getItem(i);
+                if (isFood(stack)) {
+                    foodSlot = i;
+                    break;
+                }
+            }
+
+            if (foodSlot >= 0) {
+                if (!autoEatActive) {
+                    try {
+                        autoEatPreviousSlot = client.player.getInventory().getSelectedSlot();
+                    } catch (Throwable t) {
+                        autoEatPreviousSlot = -1;
+                    }
+                    try {
+                        client.player.getInventory().setSelectedSlot(foodSlot);
+                    } catch (Throwable t) {}
+                    autoEatActive = true;
+                }
+                // Hold use key to eat
+                client.options.keyUse.setDown(true);
+            } else {
+                // No food - stop trying
+                stopAutoEat(client);
+            }
+        } else {
+            // Full enough - stop eating
+            stopAutoEat(client);
+        }
+    }
+
+    private void stopAutoEat(Minecraft client) {
+        if (autoEatActive) {
+            try {
+                if (client.options != null) client.options.keyUse.setDown(false);
+            } catch (Throwable t) {}
+            if (autoEatPreviousSlot >= 0 && client.player != null) {
+                try {
+                    client.player.getInventory().setSelectedSlot(autoEatPreviousSlot);
+                } catch (Throwable t) {}
+            }
+            autoEatPreviousSlot = -1;
+            autoEatActive = false;
+        }
+    }
+
+    private boolean isFood(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        try {
+            return stack.has(net.minecraft.core.component.DataComponents.FOOD);
+        } catch (Throwable t) {
+            // Fallback: check by item name
+            String name = stack.getItem().toString().toLowerCase();
+            return name.contains("apple") || name.contains("bread") ||
+                   name.contains("beef") || name.contains("pork") ||
+                   name.contains("chicken") || name.contains("mutton") ||
+                   name.contains("rabbit") || name.contains("cookie") ||
+                   name.contains("carrot") || name.contains("potato") ||
+                   name.contains("melon") || name.contains("berries") ||
+                   name.contains("stew") || name.contains("soup");
+        }
+    }
+
     // ========== RADAR DATA ==========
 
     private void sendRadarData(Minecraft client) {
@@ -616,6 +708,10 @@ public class MCHelperClient implements ClientModInitializer {
                     moduleManager.setAuraRange(Double.parseDouble(value));
                     LOGGER.info("[MC Helper] aura_range set to {}", value);
                     break;
+                case "aura_targets":
+                    moduleManager.setAuraTargets(value.toLowerCase());
+                    LOGGER.info("[MC Helper] aura_targets set to {}", value);
+                    break;
                 default:
                     LOGGER.warn("[MC Helper] Unknown config key: {}", key);
                     return;
@@ -663,8 +759,9 @@ public class MCHelperClient implements ClientModInitializer {
 
     private void sendConfig() {
         if (remoteOut != null) {
-            String config = String.format("CONFIG speed_mult=%.1f,zoom_fov=%d,aura_range=%.1f",
-                    moduleManager.getSpeedMult(), moduleManager.getZoomFov(), moduleManager.getAuraRange());
+            String config = String.format("CONFIG speed_mult=%.1f,zoom_fov=%d,aura_range=%.1f,aura_targets=%s",
+                    moduleManager.getSpeedMult(), moduleManager.getZoomFov(),
+                    moduleManager.getAuraRange(), moduleManager.getAuraTargets());
             remoteOut.println(config);
             remoteOut.flush();
         }

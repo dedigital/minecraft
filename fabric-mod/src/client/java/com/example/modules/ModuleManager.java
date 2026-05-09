@@ -15,6 +15,7 @@ public class ModuleManager {
     private double speedMult = 1.8;
     private int zoomFov = 20;
     private double auraRange = 4.0;
+    private String auraTargets = "all"; // "mobs", "players", "all"
 
     public ModuleManager() {
         // Combat
@@ -36,6 +37,7 @@ public class ModuleManager {
         modules.put("noweather", new Module("No Weather", "Clear rain/thunder", "Y", "visual"));
 
         // Player
+        modules.put("autoeat", new Module("Auto-Eat", "Aclik dustugunde otomatik ye", "L", "player"));
         modules.put("nohunger", new Module("No Hunger", "Keep hunger full (SP only)", "P", "player"));
         modules.put("autotool", new Module("Auto-Tool", "Auto-select best tool", "T", "player"));
         modules.put("fastbreak", new Module("Fast Break", "2x mining speed", "I", "player"));
@@ -66,4 +68,7 @@ public class ModuleManager {
 
     public double getAuraRange() { return auraRange; }
     public void setAuraRange(double auraRange) { this.auraRange = auraRange; }
+
+    public String getAuraTargets() { return auraTargets; }
+    public void setAuraTargets(String auraTargets) { this.auraTargets = auraTargets; }
 }
