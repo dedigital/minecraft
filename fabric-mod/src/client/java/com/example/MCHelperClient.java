@@ -53,6 +53,7 @@ public class MCHelperClient implements ClientModInitializer {
     private boolean yWasDown = false;
     private boolean tWasDown = false;
     private boolean iWasDown = false;
+    private boolean lWasDown = false;
 
     // Zoom state
     private float originalFov = 70f;
@@ -75,7 +76,7 @@ public class MCHelperClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        LOGGER.info("[MC Helper] Loading MC Helper v2.1...");
+        LOGGER.info("[MC Helper] Loading MC Helper v2.2...");
 
         moduleManager = new ModuleManager();
         startRemoteServer();
@@ -131,7 +132,7 @@ public class MCHelperClient implements ClientModInitializer {
             }
         });
 
-        LOGGER.info("[MC Helper] MC Helper v2.1 loaded!");
+        LOGGER.info("[MC Helper] MC Helper v2.2 loaded!");
         LOGGER.info("[MC Helper] Remote control port: " + PORT);
     }
 
@@ -248,6 +249,15 @@ public class MCHelperClient implements ClientModInitializer {
         }
         iWasDown = iDown;
 
+        // L - Auto-Eat
+        boolean lDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_L) == GLFW.GLFW_PRESS;
+        if (lDown && !lWasDown) {
+            moduleManager.toggle("autoeat");
+            if (!moduleManager.isEnabled("autoeat")) stopAutoEat(client);
+            sendStatus();
+        }
+        lWasDown = lDown;
+
         // C - Zoom (hold, not toggle)
         boolean cDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_C) == GLFW.GLFW_PRESS;
         if (cDown && !zooming) {
@@ -301,8 +311,14 @@ public class MCHelperClient implements ClientModInitializer {
     }
 
     private void applyAutoSprint(Minecraft client) {
-        if (moduleManager.isEnabled("autosprint")) {
+        if (!moduleManager.isEnabled("autosprint")) return;
+        try {
             if (client.player.input.getMoveVector().length() > 0) {
+                client.player.setSprinting(true);
+            }
+        } catch (Throwable t) {
+            // Fallback: sprint whenever forward key is held
+            if (client.player.zza > 0) {
                 client.player.setSprinting(true);
             }
         }
@@ -779,7 +795,7 @@ public class MCHelperClient implements ClientModInitializer {
                         remoteOut = new PrintWriter(socket.getOutputStream(), true);
                         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                        remoteOut.println("CONNECTED MC Helper v2.1");
+                        remoteOut.println("CONNECTED MC Helper v2.2");
                         sendStatus();
                         sendConfig();
 
